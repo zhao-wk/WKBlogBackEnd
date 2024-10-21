@@ -1,5 +1,6 @@
 package com.zhaowk.controller;
 
+import com.zhaowk.domain.ResponseResult;
 import com.zhaowk.domain.entity.Article;
 import com.zhaowk.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,10 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
-    @GetMapping("/list")
-    public List<Article> test(){
-        return articleService.list();
+    @GetMapping("/hotArticleList")
+    public ResponseResult hotArticleList(){
+        //查询热门文章，封装成ResponseResult返回
+        return articleService.hotArticleList();
     }
 
 }
