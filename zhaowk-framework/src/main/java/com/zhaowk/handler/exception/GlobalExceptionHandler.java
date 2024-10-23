@@ -17,10 +17,10 @@ public class GlobalExceptionHandler {
         return ResponseResult.errorResult(e.getCode(), e.getMessage());
     }
 
-    @ExceptionHandler(SystemException.class)
+    @ExceptionHandler(Exception.class)
     public ResponseResult exceptionHandler(Exception e){
         //打印异常信息
-        log.error("出现了异常！{}", e);
+        log.error("出现了异常！{e}");
         //从异常中获取提示信息封装返回
         return ResponseResult.errorResult(AppHttpCodeEnum.SYSTEM_ERROR, e.getMessage());
     }
