@@ -21,4 +21,9 @@ public class SystemConstants {
      */
     public static final String LINK_STATUS_NORMAL = "0";
 
+    /**
+     * redis中blog登陆前缀
+     */
+    public static final String BLOG_LOGIN_PREFIX = "bloglogin:";
+
 }
