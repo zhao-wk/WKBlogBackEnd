@@ -40,4 +40,9 @@ public class SystemConstants {
      * 友链评论
      */
     public static final String LINK_COMMENT = "1";
+
+    /**
+     * oss域名前缀
+     */
+    public static final String OSS_URL_PREFIX = "http://sluoer82h.hd-bkt.clouddn.com/";
 }
