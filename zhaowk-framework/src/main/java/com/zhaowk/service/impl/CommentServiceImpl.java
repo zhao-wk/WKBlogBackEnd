@@ -9,12 +9,16 @@ import com.zhaowk.domain.entity.Comment;
 import com.zhaowk.domain.entity.User;
 import com.zhaowk.domain.vo.CommentVO;
 import com.zhaowk.domain.vo.PageVO;
+import com.zhaowk.enums.AppHttpCodeEnum;
+import com.zhaowk.exception.SystemException;
 import com.zhaowk.mapper.CommentMapper;
 import com.zhaowk.service.CommentService;
 import com.zhaowk.service.UserService;
 import com.zhaowk.utils.BeanCopyUtils;
+import com.zhaowk.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -24,12 +28,15 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     private UserService userService;
 
     @Override
-    public ResponseResult commentList(Long articleId, Integer pageNum, Integer pageSize) {
+    public ResponseResult commentList(String commentType, Long articleId, Integer pageNum, Integer pageSize) {
         //查询文章的根评论
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        //文章则需要articleId，友链不需要
 
-        queryWrapper.eq(Comment::getArticleId, articleId);
+        queryWrapper.eq(SystemConstants.ARTICLE_COMMENT.equals(commentType),Comment::getArticleId, articleId);
         queryWrapper.eq(Comment::getRootId, SystemConstants.ROOT_COMMENT);
+        //评论类型
+        queryWrapper.eq(Comment::getType, commentType);
         //分页查询
         Page<Comment> page = new Page<>(pageNum, pageSize);
         page(page, queryWrapper);
@@ -45,6 +52,15 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
 
         return ResponseResult.okResult(new PageVO(commentVOList , page.getTotal()));
+    }
+
+    @Override
+    public ResponseResult addComment(Comment comment) {
+        if (!StringUtils.hasText(comment.getContent())) {
+            throw new SystemException(AppHttpCodeEnum.CONTENT_NOT_NULL);
+        }
+        save(comment);
+        return ResponseResult.okResult();
     }
 
     /**
