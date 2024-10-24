@@ -5,7 +5,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://139.224.213.180:3306/wk_blog?characterEncoding=utf-8&useSSL=false&serverTimezone=UTC&rewriteBatchedStatements=true
     username: root
-    password: root
+    password: WKBlog_BackEnd2024
   servlet:
     multipart:
       max-file-size: 2MB

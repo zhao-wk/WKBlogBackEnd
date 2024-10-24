@@ -26,4 +26,9 @@ public class SystemConstants {
      */
     public static final String BLOG_LOGIN_PREFIX = "bloglogin:";
 
+    /**
+     * 根评论
+     */
+    public static final Long ROOT_COMMENT = -1L;
+
 }
