@@ -27,6 +27,11 @@ public class SystemConstants {
     public static final String BLOG_LOGIN_PREFIX = "bloglogin:";
 
     /**
+     * redis中admin登陆前缀
+     */
+    public static final String ADMIN_LOGIN_PREFIX = "adminlogin:";
+
+    /**
      * 根评论
      */
     public static final Long ROOT_COMMENT = -1L;
@@ -50,4 +55,14 @@ public class SystemConstants {
      *文章浏览量redis前缀
      */
     public static final String ARTICLE_VIEW_COUNT_PREFIX = "article:viewCount";
+
+    /**
+     * 类型为菜单
+     */
+    public static final String MENU = "C";
+    /**
+     * 类型为按钮
+     */
+    public static final String BUTTON = "F";
+
 }
