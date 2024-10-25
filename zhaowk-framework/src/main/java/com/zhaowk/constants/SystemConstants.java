@@ -45,4 +45,9 @@ public class SystemConstants {
      * oss域名前缀
      */
     public static final String OSS_URL_PREFIX = "http://sluoer82h.hd-bkt.clouddn.com/";
+
+    /**
+     *文章浏览量redis前缀
+     */
+    public static final String ARTICLE_VIEW_COUNT_PREFIX = "article:viewCount";
 }
