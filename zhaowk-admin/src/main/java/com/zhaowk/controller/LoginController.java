@@ -2,8 +2,10 @@ package com.zhaowk.controller;
 
 import com.zhaowk.domain.ResponseResult;
 import com.zhaowk.domain.entity.LoginUser;
+import com.zhaowk.domain.entity.Menu;
 import com.zhaowk.domain.entity.User;
 import com.zhaowk.domain.vo.AdminUserInfoVO;
+import com.zhaowk.domain.vo.RoutersVO;
 import com.zhaowk.domain.vo.UserInfoVO;
 import com.zhaowk.enums.AppHttpCodeEnum;
 import com.zhaowk.exception.SystemException;
@@ -39,6 +41,11 @@ public class LoginController {
         return loginService.login(user);
     }
 
+    @PostMapping("/user/logout")
+    public ResponseResult logout() {
+        return loginService.logout();
+    }
+
     @GetMapping("getInfo")
     public ResponseResult<AdminUserInfoVO> getInfo() {
         //获取当前登陆的用户
@@ -54,4 +61,14 @@ public class LoginController {
         AdminUserInfoVO adminUserInfoVO = new AdminUserInfoVO(perms, roleKeyList,userInfoVO);
         return ResponseResult.okResult(adminUserInfoVO);
     }
+
+    @GetMapping("getRouters")
+    public ResponseResult<RoutersVO> getRouters() {
+        Long userId = SecurityUtils.getUserId();
+        //查询menu 结果是tree的形式
+        List<Menu> menus = menuService.selectRouterMenuTreeByUserId(userId);
+        //封装数据返回
+        return ResponseResult.okResult(new RoutersVO(menus));
+    }
+
 }

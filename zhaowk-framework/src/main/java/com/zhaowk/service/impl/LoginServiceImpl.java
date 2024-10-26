@@ -7,6 +7,7 @@ import com.zhaowk.domain.entity.User;
 import com.zhaowk.service.LoginService;
 import com.zhaowk.utils.JwtUtil;
 import com.zhaowk.utils.RedisCache;
+import com.zhaowk.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,5 +46,12 @@ public class LoginServiceImpl implements LoginService {
         Map<String, String> map = new HashMap<>();
         map.put("token", jwt);
         return ResponseResult.okResult(map);
+    }
+
+    @Override
+    public ResponseResult logout() {
+        Long userId = SecurityUtils.getUserId();
+        redisCache.deleteObject(SystemConstants.ADMIN_LOGIN_PREFIX + userId);
+        return ResponseResult.okResult();
     }
 }
