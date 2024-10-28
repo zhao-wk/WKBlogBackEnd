@@ -1,5 +1,6 @@
 package com.zhaowk.utils;
 
+import com.alibaba.excel.EasyExcel;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.ServletContext;
@@ -31,14 +32,11 @@ public class WebUtils
         }
     }
 
-
-    public static void setDownLoadHeader(String filename, ServletContext context, HttpServletResponse response) throws UnsupportedEncodingException {
-        String mimeType = context.getMimeType(filename);//获取文件的mime类型
-        response.setHeader("content-type",mimeType);
-        String fname= URLEncoder.encode(filename,"UTF-8");
-        response.setHeader("Content-disposition","attachment; filename="+fname);
-
-//        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-//        response.setCharacterEncoding("utf-8");
+    public static void setDownLoadHeader(HttpServletResponse response, String filename) throws UnsupportedEncodingException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
+        String fileName = URLEncoder.encode(filename, "UTF-8").replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename=" + fileName);
     }
 }

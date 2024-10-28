@@ -1,24 +1,34 @@
 package com.zhaowk.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhaowk.constants.SystemConstants;
 import com.zhaowk.domain.ResponseResult;
+import com.zhaowk.domain.dto.AddArticleDTO;
+import com.zhaowk.domain.dto.ArticleListDTO;
 import com.zhaowk.domain.entity.Article;
+import com.zhaowk.domain.entity.ArticleTag;
 import com.zhaowk.domain.entity.Category;
 import com.zhaowk.domain.vo.ArticleDetailVO;
 import com.zhaowk.domain.vo.ArticleListVO;
 import com.zhaowk.domain.vo.HotArticleVO;
 import com.zhaowk.domain.vo.PageVO;
 import com.zhaowk.mapper.ArticleMapper;
+import com.zhaowk.mapper.ArticleTagMapper;
+import com.zhaowk.mapper.TagMapper;
 import com.zhaowk.service.ArticleService;
+import com.zhaowk.service.ArticleTagService;
 import com.zhaowk.service.CategoryService;
 import com.zhaowk.utils.BeanCopyUtils;
 import com.zhaowk.utils.RedisCache;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +42,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private CategoryService categoryService;
     @Autowired
     private RedisCache redisCache;
+    @Autowired
+    private ArticleTagService articleTagService;
+    @Autowired
+    private TagMapper tagMapper;
+    @Autowired
+    private ArticleTagMapper articleTagMapper;
 
 
     @Override
@@ -124,6 +140,78 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public ResponseResult updateViewCount(Long id) {
         //更新redis中 对应id的浏览量
         redisCache.incrementCacheMapValue(SystemConstants.ARTICLE_VIEW_COUNT_PREFIX, id.toString(), 1);
+        return ResponseResult.okResult();
+    }
+
+    @Override
+    @Transactional
+    public ResponseResult addArticle(AddArticleDTO articleDTO) {
+        //添加博客
+        Article article = BeanCopyUtils.copyBean(articleDTO, Article.class);
+        save(article);
+
+        List<Long> tags = articleDTO.getTags();
+        List<ArticleTag> articleTags = tags.stream().map(tagId -> new ArticleTag(article.getId(), tagId))
+                .collect(Collectors.toList());
+
+        articleTagService.saveBatch(articleTags);
+
+        return ResponseResult.okResult();
+
+    }
+
+    @Override
+    public ResponseResult listArticle(Integer pageNum, Integer pageSize, ArticleListDTO articleListDTO) {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(StringUtils.hasText(articleListDTO.getTitle()), Article::getTitle, articleListDTO.getTitle());
+        queryWrapper.like(StringUtils.hasText(articleListDTO.getSummary()), Article::getSummary, articleListDTO.getSummary());
+        Page<Article> page = new Page<>(pageNum, pageSize);
+        page.setCurrent(pageNum);
+        page.setSize(pageSize);
+        page(page, queryWrapper);
+        //封装数据返回
+        PageVO pageVO = new PageVO(page.getRecords(), page.getTotal());
+        return ResponseResult.okResult(pageVO);
+    }
+
+    @Override
+    public ResponseResult getArticle(Long id) {
+        Article article = getById(id);
+        AddArticleDTO addArticleDTO = BeanCopyUtils.copyBean(article, AddArticleDTO.class);
+        //查询tag列表
+        LambdaQueryWrapper<ArticleTag> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ArticleTag::getArticleId, id);
+        List<ArticleTag> articleTags = articleTagService.list(queryWrapper);
+        List<Long> tagIds = articleTags.stream()
+                .map(articleTag -> articleTag.getTagId())
+                .collect(Collectors.toList());
+
+        //设置tagIds
+        addArticleDTO.setTags(tagIds);
+        return ResponseResult.okResult(addArticleDTO);
+    }
+
+    @Override
+    @Transactional
+    public ResponseResult updateArticle(AddArticleDTO addArticleDTO) {
+        //更新文章
+        Article article = BeanCopyUtils.copyBean(addArticleDTO, Article.class);
+        updateById(article);
+        //删除原有articleTag
+        articleTagMapper.deleteByArticleId(article.getId());
+        //添加新的articleTag
+        List<Long> tagIds = addArticleDTO.getTags();
+        List<ArticleTag> articleTags = tagIds.stream()
+                .map(tagId -> new ArticleTag(article.getId(), tagId))
+                .collect(Collectors.toList());
+        articleTagService.saveBatch(articleTags);
+
+        return ResponseResult.okResult();
+    }
+
+    @Override
+    public ResponseResult deleteArticle(Long id) {
+        baseMapper.deleteById(id);
         return ResponseResult.okResult();
     }
 }
